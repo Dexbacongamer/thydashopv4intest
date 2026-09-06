@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thyda Shop v4 - Pork Ordering</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { font-family: 'Kantumruy Pro', sans-serif; }
+        
+        /* Dynamic Theme Variables */
+        :root {
+            --bg-main: #fff5f5;
+            --card-bg: #ffffff;
+            --primary: #e53e3e;
+            --primary-hover: #c53030;
+            --text-main: #2d3748;
+            --accent: #fed7d7;
+        }
+
+        body.theme-blue-black {
+            --bg-main: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-main: #f8fafc;
+            --accent: #1e3a8a;
+        }
+
+        body.theme-grey-green {
+            --bg-main: #f0fdf4;
+            --card-bg: #ffffff;
+            --primary: #16a34a;
+            --primary-hover: #15803d;
+            --text-main: #14532d;
+            --accent: #dcfce7;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        .theme-card {
+            background-color: var(--card-bg);
+            transition: background-color 0.5s ease;
+        }
+
+        .theme-btn {
+            background-color: var(--primary);
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .theme-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* Loading Bar Animations */
+        @keyframes fillBar {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        .animate-fill-7s {
+            animation: fillBar 7s linear forwards;
+        }
+        .animate-fill-3s {
+            animation: fillBar 3s linear forwards;
+        }
+
+        /* Custom Notification Toast */
+        #custom-toast {
+            transform: translateY(-150%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #custom-toast.show {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="theme-default min-h-screen flex flex-col">
+
+    <div id="custom-toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 min-w-[300px] max-w-md p-4 rounded-2xl shadow-2xl theme-card border-2 border-red-500 flex items-center gap-3">
+        <div id="toast-icon" class="text-2xl text-red-500"><i class="fa-solid fa-bell"></i></div>
+        <div class="flex-1">
+            <h4 id="toast-title" class="font-bold text-sm">ការជូនដំណឹង</h4>
+            <p id="toast-msg" class="text-xs opacity-90">សារជូនដំណឹង</p>
+        </div>
+        <button onclick="closeToast()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div id="splash-screen" class="fixed inset-0 z-50 bg-red-600 flex flex-col items-center justify-center text-white">
+        <div class="relative animate-bounce mb-4">
+            <div class="w-28 h-28 bg-pink-300 rounded-full flex items-center justify-center text-6xl shadow-inner border-4 border-white">
+                🐷
+            </div>
+        </div>
+        <h1 class="text-2xl font-bold tracking-wide">សូមស្វាគមន៍មកកាន់</h1>
+        <h2 class="text-3xl font-extrabold mt-1 text-yellow-300">Thyda Shop v4</h2>
+        <div class="mt-6 w-48 h-2 bg-red-800 rounded-full overflow-hidden">
+            <div class="h-full bg-yellow-300 animate-fill-3s"></div>
+        </div>
+    </div>
+
+    <div id="auth-screen" class="hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="theme-card w-full max-w-md rounded-3xl p-6 shadow-2xl border border-white/20">
+            <div class="text-center mb-6">
+                <span class="text-5xl">🐖</span>
+                <h3 id="auth-title" class="text-2xl font-bold mt-2">ចុះឈ្មោះគណនីថ្មី</h3>
+                <p class="text-xs opacity-70 mt-1">សូមបញ្ចូលព័ត៌មានខាងក្រោមដើម្បីបន្ត</p>
+            </div>
+
+            <form id="signup-form" onsubmit="handleSignup(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold mb-1">ឈ្មោះអ្នកប្រើប្រាស់ (Username)</label>
+                    <input type="text" id="signup-username" required class="w-full px-4 py-2.5 rounded-xl border bg-transparent focus:outline-none focus:ring-2 focus:ring-red-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">លេខទូរស័ព្ទ (+855)</label>
+                    <div class="flex gap-2">
+                        <span class="px-3 py-2.5 bg-gray-200 dark:bg-gray-700 rounded-xl text-sm font-bold flex items-center">+855</span>
+                        <input type="tel" id="signup-phone" required placeholder="12345678" class="w-full px-4 py-2.5 rounded-xl border bg-transparent focus:outline-none focus:ring-2 focus:ring-red-500 text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">ពាក្យសម្ងាត់ (Password)</label>
+                    <input type="password" id="signup-password" required class="w-full px-4 py-2.5 rounded-xl border bg-transparent focus:outline-none focus:ring-2 focus:ring-red-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">រូបថតប្រូហ្វែល (ជ្រើសរើស ឬ រំលង)</label>
+                    <input type="file" id="signup-avatar" accept="image/*" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100">
+                </div>
+                <button type="submit" class="w-full py-3 theme-btn rounded-xl font-bold text-sm shadow-lg">ចុះឈ្មោះ</button>
+            </form>
+
+            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-semibold mb-1">ឈ្មោះអ្នកប្រើប្រាស់ (Username)</label>
+                    <input type="text" id="login-username" required class="w-full px-4 py-2.5 rounded-xl border bg-transparent focus:outline-none focus:ring-2 focus:ring-red-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">ពាក្យសម្ងាត់ (Password)</label>
+                    <input type="password" id="login-password" required class="w-full px-4 py-2.5 rounded-xl border bg-transparent focus:outline-none focus:ring-2 focus:ring-red-500 text-sm">
+                </div>
+                <button type="submit" class="w-full py-3 theme-btn rounded-xl font-bold text-sm shadow-lg">ចូលប្រើប្រាស់</button>
+            </form>
+
+            <div class="mt-4 text-center">
+                <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-xs text-red-500 font-bold hover:underline">
+                    មានគណនីរួចហើយ? ចូលប្រើប្រាស់
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-app" class="hidden flex-1 flex flex-col">
+        
+        <header class="sticky top-0 z-30 theme-card shadow-md px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img id="nav-avatar" src="https://via.placeholder.com/150" class="w-10 h-10 rounded-full border-2 border-red-500 object-cover">
+                <div>
+                    <h3 id="nav-username" class="font-bold text-sm">Username</h3>
+                    <span id="nav-status" class="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-600 font-bold">Account Status: New</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleChat()" class="p-2.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 relative">
+                    <i class="fa-solid fa-comment-dots text-lg"></i>
+                    <span id="chat-badge" class="hidden absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+                <button onclick="toggleSettings()" class="p-2.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200">
+                    <i class="fa-solid fa-gear text-lg"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 max-w-3xl w-full mx-auto p-4 space-y-6">
+
+            <div class="rounded-3xl p-6 bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-xl flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold">តូបសាច់ជ្រូក អ្នកមីង ធីដា</h2>
+                    <p class="text-xs opacity-90 mt-1">សាច់ជ្រូកស្រស់ៗ គុណភាពខ្ពស់ រៀងរាល់ថ្ងៃ</p>
+                </div>
+                <span class="text-5xl">🥩</span>
+            </div>
+
+            <section class="theme-card p-5 rounded-3xl shadow-md border border-gray-100 dark:border-gray-800">
+                <h3 class="font-bold text-base mb-3 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">1</span>
+                    ជ្រើសរើសប្រភេទសាច់ជ្រូក
+                </h3>
+                <div id="category-list" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    </div>
+            </section>
+
+            <section class="theme-card p-5 rounded-3xl shadow-md border border-gray-100 dark:border-gray-800">
+                <h3 class="font-bold text-base mb-3 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">2</span>
+                    ជ្រើសរើសទម្ងន់
+                </h3>
+
+                <div class="mb-3">
+                    <span class="text-xs font-semibold block mb-2 opacity-70">ទម្ងន់ជា គីឡូក្រាម (KG)</span>
+                    <div class="grid grid-cols-4 gap-2" id="kg-buttons">
+                        <button onclick="selectPreWeight(1, 'kg')" class="weight-btn py-2 text-xs font-bold border rounded-xl hover:border-red-500">1 KG</button>
+                        <button onclick="selectPreWeight(2, 'kg')" class="weight-btn py-2 text-xs font-bold border rounded-xl hover:border-red-500">2 KG</button>
+                        <button onclick="selectPreWeight(3, 'kg')" class="weight-btn py-2 text-xs font-bold border rounded-xl hover:border-red-500">3 KG</button>
+                        <button onclick="selectPreWeight(5, 'kg')" class="weight-btn py-2 text-xs font-bold border rounded-xl hover:border-red-500">5 KG</button>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <span class="text-xs font-semibold block mb-2 opacity-70">ទម្ងន់ជា ខាំ (Kham = 100g)</span>
+                    <div class="grid grid-cols-4 gap-2" id="kham-buttons">
+                        <button onclick="selectPreWeight(1, 'kham')" class="weight-btn py-2 text-xs font-bold border rounded-xl hover:border-red-500">1 ខាំ</button>
+                        <button onclick="selectPreWeight(2, 'kham')" class="weight-btn py-2 text-xs font-bold border rounded-xl hover:border-red-500">2 ខាំ</button>
+                        <button onclick="selectPreWeight(5, 'kham')" class="weight-btn py-2 text-xs font-bold border rounded-xl hover:border-red-500">5 ខាំ</button>
+                        <button onclick="selectPreWeight(8, 'kham')" class="weight-btn py-2 text-xs font-bold border rounded-xl hover:border-red-500">8 ខាំ</button>
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t">
+                    <span class="text-xs font-semibold block mb-2 opacity-70">ឬ បញ្ចូលទម្ងន់ផ្ទាល់ខ្លួន (Custom Weight)</span>
+                    <div class="flex gap-2">
+                        <input type="number" id="custom-kg" placeholder="គីឡូ (Max 30)" max="30" min="0" class="w-1/2 px-3 py-2 rounded-xl border bg-transparent text-xs">
+                        <input type="number" id="custom-kham" placeholder="ខាំ" min="0" class="w-1/2 px-3 py-2 rounded-xl border bg-transparent text-xs">
+                        <button onclick="applyCustomWeight()" class="px-4 py-2 theme-btn rounded-xl text-xs font-bold">យល់ព្រម</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="theme-card p-5 rounded-3xl shadow-md border border-gray-100 dark:border-gray-800">
+                <h3 class="font-bold text-base mb-3 flex items-center justify-between">
+                    <span class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">3</span>
+                        បញ្ជីការកុម្ម៉ង់ (Orders Bucket)
+                    </span>
+                    <span id="cart-total-price" class="text-red-500 text-lg font-extrabold">0 រៀល</span>
+                </h3>
+
+                <div id="cart-items" class="space-y-2 mb-4">
+                    <p class="text-xs opacity-50 text-center py-4">មិនទាន់មានទំនិញក្នុងកន្ត្រក</p>
+                </div>
+
+                <button onclick="placeOrderProcess()" id="btn-place-order" disabled class="w-full py-3.5 theme-btn rounded-2xl font-bold text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                    កុម្ម៉ង់ឥឡូវនេះ (Place Order)
+                </button>
+            </section>
+        </main>
+    </div>
+
+    <div id="processing-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="theme-card w-full max-w-sm rounded-3xl p-6 text-center shadow-2xl">
+            <div class="animate-spin text-4xl text-red-500 mb-3"><i class="fa-solid fa-spinner"></i></div>
+            <h4 class="font-bold text-base">Your order is processing....</h4>
+            <p class="text-xs opacity-70 mt-1">កំពុងដំណើរការការកុម្ម៉ង់របស់អ្នក...</p>
+
+            <div class="w-full bg-gray-200 h-2 rounded-full mt-4 overflow-hidden">
+                <div class="bg-red-500 h-full animate-fill-3s"></div>
+            </div>
+
+            <button onclick="cancelOrderProcess()" class="mt-5 px-6 py-2 bg-gray-300 dark:bg-gray-700 text-xs font-bold rounded-xl hover:bg-gray-400">
+                បោះបង់ (Cancel)
+            </button>
+        </div>
+    </div>
+
+    <div id="checkout-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="theme-card w-full max-w-md rounded-3xl p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-lg">ការទូទាត់ប្រាក់ (Checkout)</h3>
+                <button onclick="closeCheckout()" class="text-gray-400"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <button onclick="selectPayMethod('cash')" id="pay-btn-cash" class="p-3 rounded-2xl border-2 border-red-500 text-center font-bold text-xs flex flex-col items-center gap-1">
+                    <i class="fa-solid fa-money-bill-wave text-xl text-green-500"></i> Pay in Cash
+                </button>
+                <button onclick="selectPayMethod('khqr')" id="pay-btn-khqr" class="p-3 rounded-2xl border-2 border-gray-200 text-center font-bold text-xs flex flex-col items-center gap-1">
+                    <i class="fa-solid fa-qrcode text-xl text-red-500"></i> Pay by KHQR
+                </button>
+            </div>
+
+            <div id="pay-cash-section" class="space-y-3">
+                <label class="block text-xs font-semibold">ជ្រើសរើសកាលបរិច្ឆេទទូទាត់</label>
+                <select id="cash-schedule-type" onchange="toggleScheduleDate('cash')" class="w-full px-3 py-2 rounded-xl border bg-transparent text-xs">
+                    <option value="now">Pay in Cash Now</option>
+                    <option value="schedule">Pay by schedule (កំណត់កាលបរិច្ឆេទ)</option>
+                </select>
+                <input type="datetime-local" id="cash-schedule-date" class="hidden w-full px-3 py-2 rounded-xl border bg-transparent text-xs">
+            </div>
+
+            <div id="pay-khqr-section" class="space-y-3 hidden">
+                <label class="block text-xs font-semibold">ជ្រើសរើសជម្រើស KHQR</label>
+                <select id="khqr-schedule-type" onchange="toggleScheduleDate('khqr')" class="w-full px-3 py-2 rounded-xl border bg-transparent text-xs">
+                    <option value="now">Pay Now</option>
+                    <option value="schedule">Pay by schedule</option>
+                </select>
+                <input type="datetime-local" id="khqr-schedule-date" class="hidden w-full px-3 py-2 rounded-xl border bg-transparent text-xs">
+
+                <div id="khqr-image-wrapper" class="text-center pt-2">
+                    <img src="https://i.ibb.co/pqhY2vR/Thyda-ABA-1.jpg" alt="ABA KHQR" class="w-48 mx-auto rounded-2xl shadow-md border">
+                    
+                    <div id="khqr-loader" class="mt-4 hidden space-y-2">
+                        <p class="text-xs text-red-500 font-bold animate-pulse">កំពុងផ្ទៀងផ្ទាត់ការទូទាត់... (7 វិនាទី)</p>
+                        <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                            <div class="bg-red-500 h-full animate-fill-7s"></div>
+                        </div>
+                    </div>
+
+                    <div id="khqr-check" class="hidden my-3 text-green-500 text-4xl animate-bounce">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+
+                    <div id="khqr-confirm-group" class="hidden space-y-2 mt-3">
+                        <button onclick="finalSubmitOrder()" class="w-full py-3 bg-green-600 text-white rounded-xl font-bold text-xs shadow-lg">
+                            ខ្ញុំបានទូទាត់រួចរាល់តាមការបញ្ជាក់ (I have paid as confirm)
+                        </button>
+                        
+                        <button onclick="toggleDisclaimer()" class="text-[10px] text-gray-500 underline block mx-auto">
+                            លក្ខខណ្ឌ និងការទទួលខុសត្រូវ (Note)
+                        </button>
+                        <p id="disclaimer-text" class="hidden text-[10px] bg-red-50 text-red-600 p-2 rounded-lg border border-red-200">
+                            ខ្ញុំយល់ព្រមទទួលខុសត្រូវចំពោះមុខច្បាប់ ប្រសិនបើខ្ញុំធ្វើការទូទាត់ប្រាក់ក្លែងបន្លំតាមរយៈ KHQR ឬប្រព័ន្ធនេះ។
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <button id="cash-submit-btn" onclick="finalSubmitOrder()" class="w-full py-3 theme-btn rounded-xl font-bold text-xs shadow-lg mt-4">
+                បញ្ជាក់ការកុម្ម៉ង់ (Confirm Cash Order)
+            </button>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="theme-card w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
+            <button onclick="toggleSettings()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            
+            <h3 class="font-bold text-lg mb-4 border-b pb-2">ការកំណត់ (Settings)</h3>
+
+            <div class="space-y-5">
+                <div>
+                    <h4 class="text-xs font-bold mb-2">ផ្លាស់ប្តូររូបរាង (Theme Color)</h4>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="changeTheme('default')" class="py-2 text-xs border rounded-xl font-bold bg-red-100 text-red-600">Default</button>
+                        <button onclick="changeTheme('blue-black')" class="py-2 text-xs border rounded-xl font-bold bg-slate-800 text-blue-400">Blue-Black</button>
+                        <button onclick="changeTheme('grey-green')" class="py-2 text-xs border rounded-xl font-bold bg-green-100 text-green-700">Grey-Green</button>
+                    </div>
+                </div>
+
+                <div class="space-y-2 border-t pt-3">
+                    <h4 class="text-xs font-bold mb-1">ប្រព័ន្ធគណនី (Account)</h4>
+                    <button onclick="triggerAvatarChange()" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-xs font-semibold flex items-center justify-between">
+                        <span><i class="fa-solid fa-user-pen mr-2"></i> ប្តូររូបប្រូហ្វែល (Change Profile)</span>
+                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    </button>
+                    <input type="file" id="change-avatar-file" accept="image/*" class="hidden" onchange="previewAndSaveAvatar(event)">
+
+                    <button onclick="handleLogout()" class="w-full text-left px-3 py-2 rounded-xl text-yellow-600 hover:bg-yellow-50 text-xs font-semibold">
+                        <i class="fa-solid fa-right-from-bracket mr-2"></i> ចាកចេញពីគណនី (Logout)
+                    </button>
+
+                    <button onclick="promptDeactivate()" class="w-full text-left px-3 py-2 rounded-xl text-red-600 hover:bg-red-50 text-xs font-semibold">
+                        <i class="fa-solid fa-user-xmark mr-2"></i> លុបគណនីអចិន្ត្រៃយ៍ (Deactivate Account)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="chat-modal" class="hidden fixed inset-y-0 right-0 z-50 w-full max-w-sm theme-card shadow-2xl flex flex-col border-l">
+        <div class="p-4 border-b flex justify-between items-center bg-red-500 text-white">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-headset text-xl"></i>
+                <h3 class="font-bold text-sm">ឆាតជាមួយអ្នកលក់ (Seller Chat)</h3>
+            </div>
+            <button onclick="toggleChat()" class="text-white hover:text-gray-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+
+        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
+            </div>
+
+        <div class="p-3 border-t flex gap-2">
+            <input type="text" id="chat-input" placeholder="វាយសរសេរសារ..." class="flex-1 px-3 py-2 rounded-xl border bg-transparent text-xs focus:outline-none">
+            <button onclick="sendChatMessage()" class="px-4 py-2 theme-btn rounded-xl text-xs font-bold"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // 1. Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDghXkX54AQVh99tr5OXmW_v4xpaYu4-u0",
+            authDomain: "thydashopv4.firebaseapp.com",
+            projectId: "thydashopv4",
+            storageBucket: "thydashopv4.firebasestorage.app",
+            messagingSenderId: "610074077824",
+            appId: "1:610074077824:web:859a9f2fb19452a293d465"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // App State
+        let currentUser = null;
+        let activeCategory = null;
+        let cart = [];
+        let selectedPayMethod = 'cash';
+        let processingTimer = null;
+
+        // Pork Categories (Prices in KHR per KG)
+        const porkCategories = [
+            { id: 'thoy_lang', name: 'ថយឡាំង', price: 23000, icon: '🥩' },
+            { id: 'sach_sot', name: 'សាច់សុទ្ធ', price: 24000, icon: '🍖' },
+            { id: 'chhnang_chhnang', name: 'ឆ្អឹងជំនី', price: 26000, icon: '🦴' },
+            { id: 'sach_bei_chhhana', name: 'សាច់បីជាន់', price: 25000, icon: '🥓' }
+        ];
+
+        // 2. Audio Notification System (Web Audio API - Custom Sound Engine)
+        function playNotificationSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+                osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1); // A5
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.5);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.5);
+            } catch(e) { console.log('Audio error:', e); }
+        }
+
+        function showToast(title, msg) {
+            playNotificationSound();
+            document.getElementById('toast-title').innerText = title;
+            document.getElementById('toast-msg').innerText = msg;
+            const toast = document.getElementById('custom-toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 4000);
+        }
+        function closeToast() {
+            document.getElementById('custom-toast').classList.remove('show');
+        }
+
+        // 3. Splash Screen & Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                document.getElementById('splash-screen').classList.add('hidden');
+                checkStoredUser();
+            }, 3500);
+
+            renderCategories();
+        });
+
+        // 4. User Auth System
+        function checkStoredUser() {
+            const stored = localStorage.getItem('thyda_user');
+            if (stored) {
+                currentUser = JSON.parse(stored);
+                loadUserData();
+                document.getElementById('main-app').classList.remove('hidden');
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+            }
+        }
+
+        function toggleAuthMode() {
+            const isSignup = !document.getElementById('signup-form').classList.contains('hidden');
+            document.getElementById('signup-form').classList.toggle('hidden', isSignup);
+            document.getElementById('login-form').classList.toggle('hidden', !isSignup);
+            document.getElementById('auth-title').innerText = isSignup ? 'ចូលប្រើប្រាស់' : 'ចុះឈ្មោះគណនីថ្មី';
+            document.getElementById('auth-toggle-btn').innerText = isSignup ? 'មិនទាន់មានគណនី? ចុះឈ្មោះ' : 'មានគណនីរួចហើយ? ចូលប្រើប្រាស់';
+        }
+
+     async function handleSignup(e) {
+    e.preventDefault();
+    const username = document.getElementById('signup-username').value.trim();
+    const phone = document.getElementById('signup-phone').value.trim();
+    const password = document.getElementById('signup-password').value.trim();
+    const avatarFile = document.getElementById('signup-avatar').files[0];
+
+    if (!username || !phone || !password) {
+        showToast("កំហុស (Error)", "សូមបំពេញព័ត៌មានទាំងអស់!");
+        return;
+    }
+
+    try {
+        // 1. Check if user already exists (doc.exists is a boolean property)
+        const doc = await db.collection('users').doc(username).get();
+        if (doc.exists) { 
+            showToast("កំហុស (Error)", "ឈ្មោះអ្នកប្រើប្រាស់នេះមានរួចហើយ!");
+            return;
+        }
+
+        // 2. Process image avatar safely
+        let avatarData = "https://via.placeholder.com/150";
+        if (avatarFile) {
+            if (avatarFile.size > 800000) { 
+                showToast("ការព្រមាន", "រូបថតធំពេក! ប្រព័ន្ធនឹងប្រើប្រាស់រូបថតស្ដង់ដារ។");
+            } else {
+                avatarData = await convertBase64(avatarFile);
+            }
+        }
+
+        const userData = {
+            username,
+            phone: '+855' + phone,
+            password,
+            avatar: avatarData,
+            orderCount: 0,
+            status: 'New',
+            createdAt: new Date().toISOString()
+        };
+
+        // 3. Save user to Firestore & LocalStorage
+        await db.collection('users').doc(username).set(userData);
+        currentUser = userData;
+        localStorage.setItem('thyda_user', JSON.stringify(userData));
+
+        // 4. Smooth UI Transition to Homepage
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('main-app').classList.remove('hidden');
+        loadUserData();
+        showToast("ជោគជ័យ", "ការចុះឈ្មោះបានជោគជ័យ!");
+
+    } catch (error) {
+        console.error("Signup error details:", error);
+        showToast("កំហុសប្រព័ន្ធ", "មិនអាចចុះឈ្មោះបានទេ: " + error.message);
+    }
+}
+
+        async function handleLogin(e) {
+    e.preventDefault();
+    const username = document.getElementById('login-username').value.trim();
+    const password = document.getElementById('login-password').value.trim();
+
+    try {
+        const doc = await db.collection('users').doc(username).get();
+        
+        // Property check (no parentheses)
+        if (!doc.exists || doc.data().password !== password) {
+            showToast("កំហុស (Error)", "ឈ្មោះអ្នកប្រើប្រាស់ ឬ ពាក្យសម្ងាត់មិនត្រឹមត្រូវ!");
+            return;
+        }
+
+        currentUser = doc.data();
+        localStorage.setItem('thyda_user', JSON.stringify(currentUser));
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('main-app').classList.remove('hidden');
+        loadUserData();
+        showToast("ជោគជ័យ", "ការចូលប្រើប្រាស់បានជោគជ័យ!");
+    } catch (error) {
+        console.error("Login error details:", error);
+        showToast("កំហុសប្រព័ន្ធ", "មិនអាចចូលប្រើប្រាស់បានទេ: " + error.message);
+    }
+}
+
+        function loadUserData() {
+            document.getElementById('nav-username').innerText = currentUser.username;
+            document.getElementById('nav-avatar').src = currentUser.avatar;
+            updateStatusDisplay();
+            initChatListener();
+        }
+
+        function updateStatusDisplay() {
+            let statusText = "Account Status: New";
+            if (currentUser.orderCount >= 10) statusText = "Account Status: Pro 👑";
+            else if (currentUser.orderCount >= 2) statusText = "Account Status: ម៉ូយ ⭐";
+
+            document.getElementById('nav-status').innerText = statusText;
+        }
+
+        // 5. Ordering Engine
+        function renderCategories() {
+            const list = document.getElementById('category-list');
+            list.innerHTML = porkCategories.map(cat => `
+                <div onclick="selectCategory('${cat.id}')" id="cat-${cat.id}" class="cat-card p-3 rounded-2xl border text-center cursor-pointer hover:border-red-500 transition-all">
+                    <span class="text-3xl block mb-1">${cat.icon}</span>
+                    <h4 class="font-bold text-xs">${cat.name}</h4>
+                    <p class="text-[10px] text-red-500 font-bold mt-1">${cat.price.toLocaleString()}៛ / KG</p>
+                </div>
+            `).join('');
+            selectCategory(porkCategories[0].id);
+        }
+
+        function selectCategory(id) {
+            activeCategory = porkCategories.find(c => c.id === id);
+            document.querySelectorAll('.cat-card').forEach(el => el.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-red-900/30'));
+            document.getElementById(`cat-${id}`).classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-900/30');
+        }
+
+        function selectPreWeight(val, type) {
+            if (!activeCategory) return;
+            const weightInKg = type === 'kg' ? val : val * 0.1;
+            addToCart(activeCategory, weightInKg);
+        }
+
+        function applyCustomWeight() {
+            const kg = parseFloat(document.getElementById('custom-kg').value) || 0;
+            const kham = parseFloat(document.getElementById('custom-kham').value) || 0;
+
+            if (kg > 30) {
+                showToast("កំហុស", "ទម្ងន់អតិបរមាគឺ 30kg គីឡូក្រាម!");
+                return;
+            }
+
+            const totalKg = kg + (kham * 0.1);
+            if (totalKg <= 0) return;
+
+            addToCart(activeCategory, totalKg);
+            document.getElementById('custom-kg').value = '';
+            document.getElementById('custom-kham').value = '';
+        }
+
+        function addToCart(category, weightKg) {
+            const price = Math.round(category.price * weightKg);
+            cart.push({
+                id: Date.now(),
+                categoryName: category.name,
+                weightKg,
+                price
+            });
+            renderCart();
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            renderCart();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            const totalEl = document.getElementById('cart-total-price');
+            const placeBtn = document.getElementById('btn-place-order');
+
+            if (cart.length === 0) {
+                container.innerHTML = `<p class="text-xs opacity-50 text-center py-4">មិនទាន់មានទំនិញក្នុងកន្ត្រក</p>`;
+                totalEl.innerText = "0 រៀល";
+                placeBtn.disabled = true;
+                return;
+            }
+
+            let total = 0;
+            container.innerHTML = cart.map(item => {
+                total += item.price;
+                return `
+                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 text-xs">
+                        <div>
+                            <span class="font-bold">${item.categoryName}</span>
+                            <span class="opacity-70 ml-2">(${item.weightKg < 1 ? (item.weightKg*10).toFixed(0) + ' ខាំ' : item.weightKg.toFixed(1) + ' KG'})</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-red-500">${item.price.toLocaleString()}៛</span>
+                            <button onclick="removeFromCart(${item.id})" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            totalEl.innerText = total.toLocaleString() + " រៀល";
+            placeBtn.disabled = false;
+        }
+
+        // 6. Processing & Checkout Flow
+        function placeOrderProcess() {
+            document.getElementById('processing-modal').classList.remove('hidden');
+            processingTimer = setTimeout(() => {
+                document.getElementById('processing-modal').classList.add('hidden');
+                document.getElementById('checkout-modal').classList.remove('hidden');
+            }, 3000);
+        }
+
+        function cancelOrderProcess() {
+            clearTimeout(processingTimer);
+            document.getElementById('processing-modal').classList.add('hidden');
+            showToast("បោះបង់", "ការកុម្ម៉ង់ត្រូវបានបោះបង់!");
+        }
+
+        function selectPayMethod(method) {
+            selectedPayMethod = method;
+            const isCash = method === 'cash';
+            document.getElementById('pay-cash-section').classList.toggle('hidden', !isCash);
+            document.getElementById('pay-khqr-section').classList.toggle('hidden', isCash);
+            document.getElementById('cash-submit-btn').classList.toggle('hidden', !isCash);
+
+            document.getElementById('pay-btn-cash').classList.toggle('border-red-500', isCash);
+            document.getElementById('pay-btn-khqr').classList.toggle('border-red-500', !isCash);
+
+            if (!isCash) startKhqrVerification();
+        }
+
+        function toggleScheduleDate(type) {
+            const sel = document.getElementById(`${type}-schedule-type`).value;
+            document.getElementById(`${type}-schedule-date`).classList.toggle('hidden', sel !== 'schedule');
+        }
+
+        function startKhqrVerification() {
+            document.getElementById('khqr-loader').classList.remove('hidden');
+            document.getElementById('khqr-check').classList.add('hidden');
+            document.getElementById('khqr-confirm-group').classList.add('hidden');
+
+            setTimeout(() => {
+                document.getElementById('khqr-loader').classList.add('hidden');
+                document.getElementById('khqr-check').classList.remove('hidden');
+                document.getElementById('khqr-confirm-group').classList.remove('hidden');
+            }, 7000);
+        }
+
+        function toggleDisclaimer() {
+            document.getElementById('disclaimer-text').classList.toggle('hidden');
+        }
+
+        async function finalSubmitOrder() {
+            const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
+            const isCash = selectedPayMethod === 'cash';
+            const schedType = document.getElementById(isCash ? 'cash-schedule-type' : 'khqr-schedule-type').value;
+            const schedDate = document.getElementById(isCash ? 'cash-schedule-date' : 'khqr-schedule-date').value;
+
+            const orderPayload = {
+                orderId: 'ORD-' + Date.now().toString().slice(-6),
+                username: currentUser.username,
+                phone: currentUser.phone,
+                items: cart,
+                totalPrice,
+                paymentMethod: selectedPayMethod,
+                scheduleType: schedType,
+                scheduleDate: schedType === 'schedule' ? schedDate : 'Now',
+                status: 'pending',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            await db.collection('orders').add(orderPayload);
+
+            // Increment Order Count
+            currentUser.orderCount = (currentUser.orderCount || 0) + 1;
+            await db.collection('users').doc(currentUser.username).update({
+                orderCount: currentUser.orderCount
+            });
+            localStorage.setItem('thyda_user', JSON.stringify(currentUser));
+            updateStatusDisplay();
+
+            cart = [];
+            renderCart();
+            closeCheckout();
+            showToast("ជោគជ័យ", "ការកុម្ម៉ង់ត្រូវបានផ្ញើទៅកាន់អ្នកលក់រួចរាល់!");
+        }
+
+        function closeCheckout() {
+            document.getElementById('checkout-modal').classList.add('hidden');
+        }
+
+        // 7. Settings & Account System
+        function toggleSettings() {
+            document.getElementById('settings-modal').classList.toggle('hidden');
+        }
+
+        function changeTheme(themeName) {
+            document.body.className = `theme-${themeName} min-h-screen flex flex-col`;
+        }
+
+        function triggerAvatarChange() {
+            document.getElementById('change-avatar-file').click();
+        }
+
+        async function previewAndSaveAvatar(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const base64 = await convertBase64(file);
+            currentUser.avatar = base64;
+            await db.collection('users').doc(currentUser.username).update({ avatar: base64 });
+            localStorage.setItem('thyda_user', JSON.stringify(currentUser));
+            document.getElementById('nav-avatar').src = base64;
+            showToast("ជោគជ័យ", "រូបប្រូហ្វែលត្រូវបានផ្លាស់ប្តូរ!");
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('thyda_user');
+            location.reload();
+        }
+
+        async function promptDeactivate() {
+            if (confirm("តើអ្នកប្រាកដជាចង់លុបគណនីអចិន្ត្រៃយ៍? ទិន្នន័យទាំងអស់នឹងត្រូវបាត់បង់!")) {
+                await db.collection('users').doc(currentUser.username).delete();
+                localStorage.removeItem('thyda_user');
+                location.reload();
+            }
+        }
+
+        // 8. Live Real-time Chat System
+        function toggleChat() {
+            document.getElementById('chat-modal').classList.toggle('hidden');
+            document.getElementById('chat-badge').classList.add('hidden');
+        }
+
+        function initChatListener() {
+            db.collection('chats')
+                .doc(currentUser.username)
+                .collection('messages')
+                .orderBy('timestamp', 'asc')
+                .onSnapshot(snapshot => {
+                    const container = document.getElementById('chat-messages');
+                    container.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const isMe = data.sender === currentUser.username;
+                        const dateStr = data.timestamp ? formatDate(data.timestamp.toDate()) : '';
+
+                        container.innerHTML += `
+                            <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
+                                <div class="max-w-[80%] p-2.5 rounded-2xl ${isMe ? 'bg-red-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}">
+                                    <p>${data.text}</p>
+                                </div>
+                                <span class="text-[9px] opacity-50 mt-1">${dateStr}</span>
+                            </div>
+                        `;
+                    });
+                    container.scrollTop = container.scrollHeight;
+                });
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.value = '';
+            await db.collection('chats').doc(currentUser.username).collection('messages').add({
+                sender: currentUser.username,
+                text,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+
+        // Utilities
+        function convertBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function formatDate(date) {
+            const now = new Date();
+            const diffMin = Math.floor((now - date) / 60000);
+            if (diffMin < 1) return 'Recent';
+            if (diffMin < 60) return `${diffMin}m ago`;
+            return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
+        }
+    </script>
+</body>
+</html>
