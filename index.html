@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thyda Shop v4 - Pork Ordering</title>
+    <title>Thyda Shop v5 - Pork Ordering</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -17,7 +17,6 @@
     <style>
         * { font-family: 'Kantumruy Pro', sans-serif; }
         
-        /* Dynamic Theme Variables */
         :root {
             --bg-main: #fff5f5;
             --card-bg: #ffffff;
@@ -65,19 +64,13 @@
             background-color: var(--primary-hover);
         }
 
-        /* Loading Bar Animations */
         @keyframes fillBar {
             0% { width: 0%; }
             100% { width: 100%; }
         }
-        .animate-fill-7s {
-            animation: fillBar 7s linear forwards;
-        }
-        .animate-fill-3s {
-            animation: fillBar 3s linear forwards;
-        }
+        .animate-fill-7s { animation: fillBar 7s linear forwards; }
+        .animate-fill-3s { animation: fillBar 3s linear forwards; }
 
-        /* Receipt Unfold Animation */
         @keyframes receiptUnfold {
             0% { opacity: 0; transform: scaleY(0.3) translateY(-50px); }
             100% { opacity: 1; transform: scaleY(1) translateY(0); }
@@ -87,21 +80,21 @@
             transform-origin: top center;
         }
 
-        /* Custom Notification Toast */
         #custom-toast {
             transform: translateY(-150%);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        #custom-toast.show {
-            transform: translateY(0);
-        }
+        #custom-toast.show { transform: translateY(0); }
 
-        #map {
-            height: 220px;
-            width: 100%;
-            border-radius: 1rem;
-            z-index: 10;
+        #map { height: 200px; width: 100%; border-radius: 1rem; z-index: 10; }
+
+        /* Recording Pulse Wave Animation */
+        @keyframes pulseMic {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.08); box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
+        .recording-pulse { animation: pulseMic 1.5s infinite; }
     </style>
 </head>
 <body class="theme-default min-h-screen flex flex-col">
@@ -116,7 +109,7 @@
         <button onclick="closeToast()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
-    <!-- 1. SPLASH SCREEN (3.5 Seconds) -->
+    <!-- 1. SPLASH SCREEN -->
     <div id="splash-screen" class="fixed inset-0 z-50 bg-red-600 flex flex-col items-center justify-center text-white">
         <div class="relative animate-bounce mb-4">
             <div class="w-28 h-28 bg-pink-300 rounded-full flex items-center justify-center text-6xl shadow-inner border-4 border-white">
@@ -124,13 +117,13 @@
             </div>
         </div>
         <h1 class="text-2xl font-bold tracking-wide">សូមស្វាគមន៍មកកាន់</h1>
-        <h2 class="text-3xl font-extrabold mt-1 text-yellow-300">Thyda Shop v4</h2>
+        <h2 class="text-3xl font-extrabold mt-1 text-yellow-300">Thyda Shop v5</h2>
         <div class="mt-6 w-48 h-2 bg-red-800 rounded-full overflow-hidden">
             <div class="h-full bg-yellow-300 animate-fill-3s"></div>
         </div>
     </div>
 
-    <!-- 2. AUTHENTICATION MODAL (Login / Sign Up) -->
+    <!-- 2. AUTHENTICATION MODAL -->
     <div id="auth-screen" class="hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="theme-card w-full max-w-md rounded-3xl p-6 shadow-2xl border border-white/20">
             <div class="text-center mb-6">
@@ -139,7 +132,6 @@
                 <p class="text-xs opacity-70 mt-1">សូមបញ្ចូលព័ត៌មានខាងក្រោមដើម្បីបន្ត</p>
             </div>
 
-            <!-- Signup Form -->
             <form id="signup-form" onsubmit="handleSignup(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold mb-1">ឈ្មោះអ្នកប្រើប្រាស់ (Username)</label>
@@ -163,7 +155,6 @@
                 <button type="submit" class="w-full py-3 theme-btn rounded-xl font-bold text-sm shadow-lg">ចុះឈ្មោះ</button>
             </form>
 
-            <!-- Login Form -->
             <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4 hidden">
                 <div>
                     <label class="block text-xs font-semibold mb-1">ឈ្មោះអ្នកប្រើប្រាស់ (Username)</label>
@@ -197,7 +188,6 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <!-- Order History Button -->
                 <button onclick="toggleHistoryModal()" class="p-2.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 relative" title="ប្រវត្តិការកុម្ម៉ង់">
                     <i class="fa-solid fa-clock-rotate-left text-lg text-red-500"></i>
                 </button>
@@ -229,9 +219,7 @@
                     <span class="w-6 h-6 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">1</span>
                     ជ្រើសរើសប្រភេទសាច់ជ្រូក
                 </h3>
-                <div id="category-list" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <!-- Populated dynamically -->
-                </div>
+                <div id="category-list" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
             </section>
 
             <!-- STEP 2: Weight Selection -->
@@ -241,29 +229,26 @@
                     ជ្រើសរើសទម្ងន់
                 </h3>
 
-                <!-- Pre-weight Buttons (KG) -->
                 <div class="mb-3">
                     <span class="text-xs font-semibold block mb-2 opacity-70">ទម្ងន់ជា គីឡូក្រាម (KG)</span>
-                    <div class="grid grid-cols-4 gap-2" id="kg-buttons">
-                        <button onclick="selectPreWeight(1, 'kg')" class="weight-btn py-2 text-xs font-bold border rounded-xl hover:border-red-500">1 KG</button>
-                        <button onclick="selectPreWeight(2, 'kg')" class="weight-btn py-2 text-xs font-bold border rounded-xl hover:border-red-500">2 KG</button>
-                        <button onclick="selectPreWeight(3, 'kg')" class="weight-btn py-2 text-xs font-bold border rounded-xl hover:border-red-500">3 KG</button>
-                        <button onclick="selectPreWeight(5, 'kg')" class="weight-btn py-2 text-xs font-bold border rounded-xl hover:border-red-500">5 KG</button>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="selectPreWeight(1, 'kg')" class="py-2 text-xs font-bold border rounded-xl hover:border-red-500">1 KG</button>
+                        <button onclick="selectPreWeight(2, 'kg')" class="py-2 text-xs font-bold border rounded-xl hover:border-red-500">2 KG</button>
+                        <button onclick="selectPreWeight(3, 'kg')" class="py-2 text-xs font-bold border rounded-xl hover:border-red-500">3 KG</button>
+                        <button onclick="selectPreWeight(5, 'kg')" class="py-2 text-xs font-bold border rounded-xl hover:border-red-500">5 KG</button>
                     </div>
                 </div>
 
-                <!-- Pre-weight Buttons (KHAM) -->
                 <div class="mb-4">
                     <span class="text-xs font-semibold block mb-2 opacity-70">ទម្ងន់ជា ខាំ (Kham = 100g)</span>
-                    <div class="grid grid-cols-4 gap-2" id="kham-buttons">
-                        <button onclick="selectPreWeight(1, 'kham')" class="weight-btn py-2 text-xs font-bold border rounded-xl hover:border-red-500">1 ខាំ</button>
-                        <button onclick="selectPreWeight(2, 'kham')" class="weight-btn py-2 text-xs font-bold border rounded-xl hover:border-red-500">2 ខាំ</button>
-                        <button onclick="selectPreWeight(5, 'kham')" class="weight-btn py-2 text-xs font-bold border rounded-xl hover:border-red-500">5 ខាំ</button>
-                        <button onclick="selectPreWeight(8, 'kham')" class="weight-btn py-2 text-xs font-bold border rounded-xl hover:border-red-500">8 ខាំ</button>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="selectPreWeight(1, 'kham')" class="py-2 text-xs font-bold border rounded-xl hover:border-red-500">1 ខាំ</button>
+                        <button onclick="selectPreWeight(2, 'kham')" class="py-2 text-xs font-bold border rounded-xl hover:border-red-500">2 ខាំ</button>
+                        <button onclick="selectPreWeight(5, 'kham')" class="py-2 text-xs font-bold border rounded-xl hover:border-red-500">5 ខាំ</button>
+                        <button onclick="selectPreWeight(8, 'kham')" class="py-2 text-xs font-bold border rounded-xl hover:border-red-500">8 ខាំ</button>
                     </div>
                 </div>
 
-                <!-- Backup Custom Weight -->
                 <div class="pt-3 border-t">
                     <span class="text-xs font-semibold block mb-2 opacity-70">ឬ បញ្ចូលទម្ងន់ផ្ទាល់ខ្លួន (Custom Weight)</span>
                     <div class="flex gap-2">
@@ -274,7 +259,7 @@
                 </div>
             </section>
 
-            <!-- STEP 3: Multi-order Cart Bucket -->
+            <!-- STEP 3: Cart Bucket -->
             <section class="theme-card p-5 rounded-3xl shadow-md border border-gray-100 dark:border-gray-800">
                 <h3 class="font-bold text-base mb-3 flex items-center justify-between">
                     <span class="flex items-center gap-2">
@@ -289,24 +274,22 @@
                 </div>
             </section>
 
-            <!-- STEP 4: Address and Location (Crucial Feature) -->
+            <!-- STEP 4: Address & Location -->
             <section class="theme-card p-5 rounded-3xl shadow-md border border-gray-100 dark:border-gray-800">
                 <h3 class="font-bold text-base mb-3 flex items-center gap-2">
                     <span class="w-6 h-6 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">4</span>
                     អាសយដ្ឋាន និង ទីតាំងដឹកជញ្ជូន (Address & Location)
                 </h3>
 
-                <!-- Tab Switchers -->
                 <div class="flex border-b mb-4">
                     <button onclick="switchAddressTab('manual')" id="tab-manual" class="flex-1 py-2 text-xs font-bold border-b-2 border-red-500 text-red-500">
-                        <i class="fa-solid fa-pen-to-square mr-1"></i> បញ្ចូលអាសយដ្ឋានផ្ទាល់ (Manual)
+                        <i class="fa-solid fa-pen-to-square mr-1"></i> អាសយដ្ឋានផ្ទាល់ (Manual)
                     </button>
                     <button onclick="switchAddressTab('map')" id="tab-map" class="flex-1 py-2 text-xs font-bold border-b-2 border-transparent opacity-60">
-                        <i class="fa-solid fa-map-location-dot mr-1"></i> ផែនទី Google Maps (Interactive)
+                        <i class="fa-solid fa-map-location-dot mr-1"></i> ផែនទី (Interactive Map)
                     </button>
                 </div>
 
-                <!-- Manual Address Section -->
                 <div id="address-manual-section" class="space-y-3">
                     <div>
                         <label class="block text-xs font-semibold mb-1">ផ្ទះលេខ / ផ្លូវ (House No. / Street)</label>
@@ -328,19 +311,16 @@
                     </div>
                 </div>
 
-                <!-- Google Map / Interactive OpenStreetMap Section -->
                 <div id="address-map-section" class="space-y-3 hidden">
                     <div class="flex gap-2">
-                        <input type="text" id="map-search-input" placeholder="ស្វែងរកទីតាំងរបស់អ្នកក្នុងប្រទេសកម្ពុជា..." class="flex-1 px-3 py-2 rounded-xl border bg-transparent text-xs">
+                        <input type="text" id="map-search-input" placeholder="ស្វែងរកទីតាំងរបស់អ្នក..." class="flex-1 px-3 py-2 rounded-xl border bg-transparent text-xs">
                         <button onclick="searchMapLocation()" class="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded-xl text-xs font-bold">
                             <i class="fa-solid fa-magnifying-glass"></i>
                         </button>
                     </div>
 
-                    <!-- OpenStreetMap Canvas -->
                     <div id="map"></div>
 
-                    <!-- Instant-Live Location Button -->
                     <button onclick="getLiveGPSLocation()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow">
                         <i class="fa-solid fa-crosshairs text-sm"></i> យកទីតាំងផ្ទាល់ភ្លាមៗ (Instant-Live Location)
                     </button>
@@ -350,10 +330,74 @@
                         <p id="map-address-text" class="truncate opacity-80">មិនទាន់បានជ្រើសរើសទីតាំងលើផែនទី</p>
                     </div>
                 </div>
+            </section>
 
-                <button onclick="placeOrderProcess()" id="btn-place-order" disabled class="w-full py-3.5 mt-4 theme-btn rounded-2xl font-bold text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                    កុម្ម៉ង់ឥឡូវនេះ (Place Order)
-                </button>
+            <!-- STEP 5: OPTIONAL NOTE & VOICE RECORDING SECTION -->
+            <section class="theme-card p-5 rounded-3xl shadow-md border border-gray-100 dark:border-gray-800">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-bold text-base flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">5</span>
+                        ចំណាំបន្ថែម (Note - Optional)
+                    </h3>
+                    <span class="text-[11px] bg-gray-200 dark:bg-gray-700 px-2.5 py-0.5 rounded-full font-bold opacity-70">មិនតម្រូវ (Optional)</span>
+                </div>
+
+                <!-- Sub-Section Tabs -->
+                <div class="flex border-b mb-4">
+                    <button onclick="switchNoteTab('text')" id="note-tab-text" class="flex-1 py-2 text-xs font-bold border-b-2 border-red-500 text-red-500">
+                        <i class="fa-solid fa-pen-nib mr-1"></i> សរសេរសារចំណាំ (Text Note)
+                    </button>
+                    <button onclick="switchNoteTab('voice')" id="note-tab-voice" class="flex-1 py-2 text-xs font-bold border-b-2 border-transparent opacity-60">
+                        <i class="fa-solid fa-microphone mr-1"></i> ថតសំឡេងចំណាំ (Voice Note)
+                    </button>
+                </div>
+
+                <!-- 1. Text Note Sub-Section -->
+                <div id="note-text-section" class="space-y-2">
+                    <textarea id="note-text-input" oninput="updateWordCount()" rows="3" placeholder="វាយបញ្ចូលចំណាំសម្រាប់ការកាត់សាច់ ឬ ការដឹកជញ្ជូន (អតិបរមា 150 ពាក្យ)..." class="w-full p-3 rounded-xl border bg-transparent text-xs focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
+                    <div class="flex justify-between items-center text-[10px] opacity-70">
+                        <span>ឧទាហរណ៍៖ "សូមជួយហាន់ជាដុំតូចៗ និង យកខ្លាញ់តិច"</span>
+                        <span id="word-count-display">0 / 150 ពាក្យ</span>
+                    </div>
+                </div>
+
+                <!-- 2. Voice Note Sub-Section -->
+                <div id="note-voice-section" class="space-y-4 hidden text-center py-2">
+                    <div class="flex justify-center items-center gap-4">
+                        <button id="btn-mic-start" onclick="startVoiceRecording()" class="w-16 h-16 rounded-full bg-red-500 text-white text-2xl shadow-lg hover:bg-red-600 flex items-center justify-center transition-all">
+                            <i class="fa-solid fa-microphone"></i>
+                        </button>
+                        <button id="btn-mic-stop" onclick="stopVoiceRecording()" disabled class="w-16 h-16 rounded-full bg-gray-400 text-white text-2xl shadow-lg flex items-center justify-center disabled:opacity-40">
+                            <i class="fa-solid fa-square"></i>
+                        </button>
+                    </div>
+
+                    <div id="voice-status-text" class="text-xs font-bold opacity-70">ចុចប៊ូតុង <i class="fa-solid fa-microphone"></i> ដើម្បីចាប់ផ្តើមថតសំឡេង</div>
+
+                    <!-- Audio Recording Preview Bar -->
+                    <div id="voice-preview-container" class="hidden bg-gray-50 dark:bg-gray-800 p-3 rounded-2xl border flex items-center gap-3">
+                        <button onclick="playVoicePreview()" class="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center text-xs">
+                            <i id="preview-play-icon" class="fa-solid fa-play"></i>
+                        </button>
+                        <div class="flex-1">
+                            <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div id="preview-progress-bar" class="h-full bg-red-500 w-0"></div>
+                            </div>
+                        </div>
+                        <span id="preview-time" class="text-[10px] font-bold opacity-80">00:00</span>
+                        <button onclick="clearVoiceRecord()" class="text-gray-400 hover:text-red-500 text-sm"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+
+                <!-- Step 5 Order Action Buttons -->
+                <div class="mt-5 space-y-2">
+                    <button onclick="placeOrderProcess()" id="btn-place-order" disabled class="w-full py-3.5 theme-btn rounded-2xl font-bold text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                        កុម្ម៉ង់ឥឡូវនេះ (Place Order)
+                    </button>
+                    <button onclick="skipNoteAndOrder()" id="btn-skip-note" disabled class="w-full py-2.5 bg-gray-200 dark:bg-gray-700 rounded-2xl font-bold text-xs opacity-80 hover:opacity-100 disabled:opacity-30">
+                        រំលងចំណាំ ហើយកុម្ម៉ង់ភ្លាមៗ (Skip Note & Order)
+                    </button>
+                </div>
             </section>
         </main>
     </div>
@@ -368,28 +412,24 @@
                 <i class="fa-solid fa-receipt text-red-500"></i> ប្រវត្តិការកុម្ម៉ង់ទំនិញ (Order History)
             </h3>
 
-            <div id="history-list" class="flex-1 overflow-y-auto space-y-3 pr-1">
-                <!-- Dynamically populated order records -->
-            </div>
+            <div id="history-list" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
         </div>
     </div>
 
-    <!-- 6. ANIMATED RECEIPT MODAL -->
+    <!-- 6. ANIMATED RECEIPT MODAL WITH VOICE NOTE PLAYER -->
     <div id="receipt-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
         <div class="w-full max-w-sm bg-white text-gray-800 rounded-2xl p-6 shadow-2xl relative border-t-8 border-red-500 animate-receipt">
             <button onclick="closeReceiptModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
 
-            <!-- Receipt Header -->
             <div class="text-center border-b border-dashed pb-4">
                 <span class="text-4xl">🐖</span>
-                <h2 class="font-extrabold text-xl mt-1 text-red-600">Thyda Shop v4</h2>
+                <h2 class="font-extrabold text-xl mt-1 text-red-600">Thyda Shop v5</h2>
                 <p class="text-[10px] text-gray-500">តូបសាច់ជ្រូក អ្នកមីង ធីដា - វិក្កយបត្រទូទាត់</p>
                 <p id="receipt-id" class="text-[11px] font-bold mt-2 bg-gray-100 py-1 rounded-lg">ID: #ORD-000000</p>
             </div>
 
-            <!-- Customer Details -->
             <div class="py-3 border-b border-dashed text-xs space-y-1">
                 <div class="flex justify-between">
                     <span class="opacity-70">អតិថិជន៖</span>
@@ -412,12 +452,33 @@
             <!-- Items Purchased -->
             <div class="py-3 border-b border-dashed text-xs">
                 <h4 class="font-bold mb-2">មុខទំនិញដែលបានទិញ៖</h4>
-                <div id="receipt-items-list" class="space-y-1.5">
-                    <!-- Dynamic Items -->
+                <div id="receipt-items-list" class="space-y-1.5"></div>
+            </div>
+
+            <!-- RECEIPT NOTE SECTION (Text / Voice Note Player) -->
+            <div id="receipt-note-wrapper" class="py-3 border-b border-dashed text-xs hidden">
+                <h4 class="font-bold mb-1.5 text-gray-700">ចំណាំរបស់អ្នកកុម្ម៉ង់ (Order Note):</h4>
+                
+                <!-- Text Note Container -->
+                <p id="receipt-text-note" class="bg-amber-50 p-2 rounded-lg border border-amber-200 text-amber-900 font-semibold hidden break-words"></p>
+
+                <!-- Voice Note Player Bar -->
+                <div id="receipt-voice-note" class="bg-red-50 p-2.5 rounded-xl border border-red-200 flex items-center gap-3 hidden">
+                    <button onclick="toggleReceiptAudioPlay()" class="w-9 h-9 rounded-full bg-red-500 text-white flex items-center justify-center text-sm shadow">
+                        <i id="receipt-play-btn-icon" class="fa-solid fa-play"></i>
+                    </button>
+                    <div class="flex-1">
+                        <div class="flex justify-between text-[9px] font-bold text-red-600 mb-1">
+                            <span><i class="fa-solid fa-microphone mr-1"></i> Voice Note</span>
+                            <span id="receipt-audio-timer">00:00</span>
+                        </div>
+                        <div class="h-2 bg-red-200 rounded-full overflow-hidden">
+                            <div id="receipt-audio-bar" class="h-full bg-red-500 w-0"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Total & Payment Method -->
             <div class="pt-3 text-xs space-y-1">
                 <div class="flex justify-between">
                     <span class="opacity-70">វិធីសាស្ត្រទូទាត់៖</span>
@@ -429,7 +490,6 @@
                 </div>
             </div>
 
-            <!-- Receipt Footer -->
             <div class="mt-6 text-center border-t border-dashed pt-3">
                 <p class="text-[10px] font-bold text-green-600"><i class="fa-solid fa-circle-check"></i> ការបញ្ជាទិញបានជោគជ័យ!</p>
                 <p class="text-[9px] text-gray-400 mt-0.5">សូមអរគុណសម្រាប់ការគាំទ្រ តូបសាច់ជ្រូក អ្នកមីង ធីដា</p>
@@ -437,7 +497,7 @@
         </div>
     </div>
 
-    <!-- 3. ORDER PROCESSING SUB-BAR MODAL -->
+    <!-- 3. ORDER PROCESSING MODAL -->
     <div id="processing-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="theme-card w-full max-w-sm rounded-3xl p-6 text-center shadow-2xl">
             <div class="animate-spin text-4xl text-red-500 mb-3"><i class="fa-solid fa-spinner"></i></div>
@@ -462,7 +522,6 @@
                 <button onclick="closeCheckout()" class="text-gray-400"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
 
-            <!-- Payment Type Selection -->
             <div class="grid grid-cols-2 gap-3 mb-4">
                 <button onclick="selectPayMethod('cash')" id="pay-btn-cash" class="p-3 rounded-2xl border-2 border-red-500 text-center font-bold text-xs flex flex-col items-center gap-1">
                     <i class="fa-solid fa-money-bill-wave text-xl text-green-500"></i> Pay in Cash
@@ -472,7 +531,6 @@
                 </button>
             </div>
 
-            <!-- Cash Payment Sub-options -->
             <div id="pay-cash-section" class="space-y-3">
                 <label class="block text-xs font-semibold">ជ្រើសរើសកាលបរិច្ឆេទទូទាត់</label>
                 <select id="cash-schedule-type" onchange="toggleScheduleDate('cash')" class="w-full px-3 py-2 rounded-xl border bg-transparent text-xs">
@@ -482,7 +540,6 @@
                 <input type="datetime-local" id="cash-schedule-date" class="hidden w-full px-3 py-2 rounded-xl border bg-transparent text-xs">
             </div>
 
-            <!-- KHQR Payment Sub-options -->
             <div id="pay-khqr-section" class="space-y-3 hidden">
                 <label class="block text-xs font-semibold">ជ្រើសរើសជម្រើស KHQR</label>
                 <select id="khqr-schedule-type" onchange="toggleScheduleDate('khqr')" class="w-full px-3 py-2 rounded-xl border bg-transparent text-xs">
@@ -491,11 +548,9 @@
                 </select>
                 <input type="datetime-local" id="khqr-schedule-date" class="hidden w-full px-3 py-2 rounded-xl border bg-transparent text-xs">
 
-                <!-- KHQR Pop-up View -->
                 <div id="khqr-image-wrapper" class="text-center pt-2">
                     <img src="https://i.ibb.co/pqhY2vR/Thyda-ABA-1.jpg" alt="ABA KHQR" class="w-48 mx-auto rounded-2xl shadow-md border">
                     
-                    <!-- 7 Seconds Verification Sub-loader -->
                     <div id="khqr-loader" class="mt-4 hidden space-y-2">
                         <p class="text-xs text-red-500 font-bold animate-pulse">កំពុងផ្ទៀងផ្ទាត់ការទូទាត់... (7 វិនាទី)</p>
                         <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
@@ -503,17 +558,14 @@
                         </div>
                     </div>
 
-                    <!-- Animated Check mark -->
                     <div id="khqr-check" class="hidden my-3 text-green-500 text-4xl animate-bounce">
                         <i class="fa-solid fa-circle-check"></i>
                     </div>
 
-                    <!-- Confirm Button & Disclaimer -->
                     <div id="khqr-confirm-group" class="hidden space-y-2 mt-3">
                         <button onclick="finalSubmitOrder()" class="w-full py-3 bg-green-600 text-white rounded-xl font-bold text-xs shadow-lg">
                             ខ្ញុំបានទូទាត់រួចរាល់តាមការបញ្ជាក់ (I have paid as confirm)
                         </button>
-                        
                         <button onclick="toggleDisclaimer()" class="text-[10px] text-gray-500 underline block mx-auto">
                             លក្ខខណ្ឌ និងការទទួលខុសត្រូវ (Note)
                         </button>
@@ -524,24 +576,21 @@
                 </div>
             </div>
 
-            <!-- Final Cash Submit Button -->
             <button id="cash-submit-btn" onclick="finalSubmitOrder()" class="w-full py-3 theme-btn rounded-xl font-bold text-xs shadow-lg mt-4">
                 បញ្ជាក់ការកុម្ម៉ង់ (Confirm Cash Order)
             </button>
         </div>
     </div>
 
-    <!-- 7. SETTINGS DRAWER / MODAL -->
+    <!-- SETTINGS MODAL -->
     <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="theme-card w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
             <button onclick="toggleSettings()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
-            
             <h3 class="font-bold text-lg mb-4 border-b pb-2">ការកំណត់ (Settings)</h3>
 
             <div class="space-y-5">
-                <!-- Theme Selection -->
                 <div>
                     <h4 class="text-xs font-bold mb-2">ផ្លាស់ប្តូររូបរាង (Theme Color)</h4>
                     <div class="grid grid-cols-3 gap-2">
@@ -551,7 +600,6 @@
                     </div>
                 </div>
 
-                <!-- Account Actions -->
                 <div class="space-y-2 border-t pt-3">
                     <h4 class="text-xs font-bold mb-1">ប្រព័ន្ធគណនី (Account)</h4>
                     <button onclick="triggerAvatarChange()" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-xs font-semibold flex items-center justify-between">
@@ -572,7 +620,7 @@
         </div>
     </div>
 
-    <!-- 8. CHAT POPUP -->
+    <!-- CHAT POPUP -->
     <div id="chat-modal" class="hidden fixed inset-y-0 right-0 z-50 w-full max-w-sm theme-card shadow-2xl flex flex-col border-l">
         <div class="p-4 border-b flex justify-between items-center bg-red-500 text-white">
             <div class="flex items-center gap-2">
@@ -582,25 +630,19 @@
             <button onclick="toggleChat()" class="text-white hover:text-gray-200"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
 
-        <!-- Messages Area -->
-        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
-            <!-- Dynamic Messages -->
-        </div>
+        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-xs"></div>
 
-        <!-- Chat Input -->
         <div class="p-3 border-t flex gap-2">
             <input type="text" id="chat-input" placeholder="វាយសរសេរសារ..." class="flex-1 px-3 py-2 rounded-xl border bg-transparent text-xs focus:outline-none">
             <button onclick="sendChatMessage()" class="px-4 py-2 theme-btn rounded-xl text-xs font-bold"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
-    <!-- FIREBASE SDKs (v9 Compat) -->
+    <!-- FIREBASE SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
-    <!-- CORE JAVASCRIPT LOGIC -->
     <script>
-        // 1. Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDghXkX54AQVh99tr5OXmW_v4xpaYu4-u0",
             authDomain: "thydashopv4.firebaseapp.com",
@@ -613,7 +655,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // App State
+        // App States
         let currentUser = null;
         let activeCategory = null;
         let cart = [];
@@ -626,20 +668,27 @@
         let mapMarker = null;
         let currentMapAddress = '';
 
-        // Pork Categories (Prices in KHR per KG)
-       const porkCategories = [
-  { id: 'thoy_lang', name: 'ថយឡាំង', price: 23000, icon: '🥩' },
-  { id: 'sach_bei_chhhana', name: 'សាច់បីជាន់', price: 24000, icon: '🥓' },
-  { id: 'chhnang_kop', name: 'ឆ្អឹងគប់', price: 22000, icon: '🦴' },
-  { id: 'chhnang_chhnang', name: 'ឆ្អឹងជំនី', price: 24000, icon: '🍖' },
-  { id: 'sach_sot', name: 'សាច់សុទ្ធ', price: 22000, icon: '🥩' },
-  { id: 'sach_krok', name: 'សាច់ក្រក', price: 30000, icon: '🌭' },
-  { id: 'jeung_jrouk', name: 'ជើងជ្រូក', price: 22000, icon: '🐖' },
-  { id: 'kroeung_knong', name: 'គ្រឿងក្នុង', price: 24000, icon: '🍲' }
-];
+        // Step 5 Note & Voice States
+        let activeNoteTab = 'text'; // 'text' or 'voice'
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let recordedVoiceBase64 = null;
+        let previewAudioObj = null;
+
+        // Receipt Voice Player State
+        let receiptAudioObj = null;
+    const porkCategories = [
+      { id: 'thoy_lang', name: 'ថយឡាំង', price: 23000, icon: '🥩' },
+      { id: 'sach_bei_chhhana', name: 'សាច់បីជាន់', price: 24000, icon: '🥓' },
+      { id: 'chhnang_kop', name: 'ឆ្អឹងគប់', price: 22000, icon: '🦴' },
+      { id: 'chhnang_chhnang', name: 'ឆ្អឹងជំនី', price: 24000, icon: '🍖' },
+      { id: 'sach_sot', name: 'សាច់សុទ្ធ', price: 22000, icon: '🥩' },
+      { id: 'sach_krok', name: 'សាច់ក្រក', price: 30000, icon: '🌭' },
+      { id: 'jeung_jrouk', name: 'ជើងជ្រូក', price: 22000, icon: '🐖' },
+      { id: 'kroeung_knong', name: 'គ្រឿងក្នុង', price: 24000, icon: '🍲' }
+    ];
 
 
-        // 2. Audio Notification System (Web Audio API)
         function playNotificationSound() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -654,7 +703,7 @@
                 gain.connect(ctx.destination);
                 osc.start();
                 osc.stop(ctx.currentTime + 0.5);
-            } catch(e) { console.log('Audio error:', e); }
+            } catch(e) {}
         }
 
         function showToast(title, msg) {
@@ -669,17 +718,14 @@
             document.getElementById('custom-toast').classList.remove('show');
         }
 
-        // 3. Splash Screen & Initialization
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 document.getElementById('splash-screen').classList.add('hidden');
                 checkStoredUser();
             }, 3500);
-
             renderCategories();
         });
 
-        // 4. User Auth System
         function checkStoredUser() {
             const stored = localStorage.getItem('thyda_user');
             if (stored) {
@@ -709,7 +755,6 @@
             if (!username || !phone || !password) return;
 
             try {
-                // FIXED: doc.exists is a boolean property
                 const doc = await db.collection('users').doc(username).get();
                 if (doc.exists) {
                     showToast("កំហុស (Error)", "ឈ្មោះអ្នកប្រើប្រាស់នេះមានរួចហើយ!");
@@ -718,23 +763,10 @@
 
                 let avatarData = "https://via.placeholder.com/150";
                 if (avatarFile) {
-                    if (avatarFile.size > 800000) {
-                        showToast("ការព្រមាន", "រូបថតធំពេក! ប្រព័ន្ធនឹងប្រើប្រាស់រូបថតស្ដង់ដារ។");
-                    } else {
-                        avatarData = await convertBase64(avatarFile);
-                    }
+                    avatarData = await convertBase64(avatarFile);
                 }
 
-                const userData = {
-                    username,
-                    phone: '+855' + phone,
-                    password,
-                    avatar: avatarData,
-                    orderCount: 0,
-                    status: 'New',
-                    createdAt: new Date().toISOString()
-                };
-
+                const userData = { username, phone: '+855' + phone, password, avatar: avatarData, orderCount: 0, status: 'New', createdAt: new Date().toISOString() };
                 await db.collection('users').doc(username).set(userData);
                 currentUser = userData;
                 localStorage.setItem('thyda_user', JSON.stringify(userData));
@@ -744,8 +776,7 @@
                 loadUserData();
                 showToast("ជោគជ័យ", "ការចុះឈ្មោះបានជោគជ័យ!");
             } catch (err) {
-                console.error("Signup error:", err);
-                showToast("កំហុសប្រព័ន្ធ", "មិនអាចចុះឈ្មោះបានទេ: " + err.message);
+                showToast("កំហុសប្រព័ន្ធ", err.message);
             }
         }
 
@@ -768,8 +799,7 @@
                 loadUserData();
                 showToast("ជោគជ័យ", "ការចូលប្រើប្រាស់បានជោគជ័យ!");
             } catch (err) {
-                console.error("Login error:", err);
-                showToast("កំហុសប្រព័ន្ធ", "មិនអាចចូលប្រើប្រាស់បានទេ: " + err.message);
+                showToast("កំហុសប្រព័ន្ធ", err.message);
             }
         }
 
@@ -788,7 +818,6 @@
             document.getElementById('nav-status').innerText = statusText;
         }
 
-        // 5. Ordering Engine
         function renderCategories() {
             const list = document.getElementById('category-list');
             list.innerHTML = porkCategories.map(cat => `
@@ -816,15 +845,9 @@
         function applyCustomWeight() {
             const kg = parseFloat(document.getElementById('custom-kg').value) || 0;
             const kham = parseFloat(document.getElementById('custom-kham').value) || 0;
-
-            if (kg > 30) {
-                showToast("កំហុស", "ទម្ងន់អតិបរមាគឺ 30kg គីឡូក្រាម!");
-                return;
-            }
-
+            if (kg > 30) { showToast("កំហុស", "ទម្ងន់អតិបរមាគឺ 30kg!"); return; }
             const totalKg = kg + (kham * 0.1);
             if (totalKg <= 0) return;
-
             addToCart(activeCategory, totalKg);
             document.getElementById('custom-kg').value = '';
             document.getElementById('custom-kham').value = '';
@@ -832,12 +855,7 @@
 
         function addToCart(category, weightKg) {
             const price = Math.round(category.price * weightKg);
-            cart.push({
-                id: Date.now(),
-                categoryName: category.name,
-                weightKg,
-                price
-            });
+            cart.push({ id: Date.now(), categoryName: category.name, weightKg, price });
             renderCart();
         }
 
@@ -850,11 +868,13 @@
             const container = document.getElementById('cart-items');
             const totalEl = document.getElementById('cart-total-price');
             const placeBtn = document.getElementById('btn-place-order');
+            const skipBtn = document.getElementById('btn-skip-note');
 
             if (cart.length === 0) {
                 container.innerHTML = `<p class="text-xs opacity-50 text-center py-4">មិនទាន់មានទំនិញក្នុងកន្ត្រក</p>`;
                 totalEl.innerText = "0 រៀល";
                 placeBtn.disabled = true;
+                skipBtn.disabled = true;
                 return;
             }
 
@@ -877,9 +897,10 @@
 
             totalEl.innerText = total.toLocaleString() + " រៀល";
             placeBtn.disabled = false;
+            skipBtn.disabled = false;
         }
 
-        // 6. Address & Location Management (Step 4)
+        // STEP 4 LOCATION LOGIC
         function switchAddressTab(tab) {
             selectedAddressTab = tab;
             const isManual = tab === 'manual';
@@ -894,31 +915,17 @@
             document.getElementById('tab-map').classList.toggle('text-red-500', !isManual);
             document.getElementById('tab-map').classList.toggle('opacity-60', isManual);
 
-            if (!isManual && !mapInstance) {
-                setTimeout(initLeafletMap, 200);
-            }
+            if (!isManual && !mapInstance) setTimeout(initLeafletMap, 200);
         }
 
         function initLeafletMap() {
-            // Default center: Phnom Penh (11.5564, 104.9282)
             mapInstance = L.map('map').setView([11.5564, 104.9282], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap'
-            }).addTo(mapInstance);
-
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance);
             mapMarker = L.marker([11.5564, 104.9282], { draggable: true }).addTo(mapInstance);
-
             updateMapLocationText(11.5564, 104.9282);
 
-            mapMarker.on('dragend', function (e) {
-                const latlng = mapMarker.getLatLng();
-                updateMapLocationText(latlng.lat, latlng.lng);
-            });
-
-            mapInstance.on('click', function (e) {
-                mapMarker.setLatLng(e.latlng);
-                updateMapLocationText(e.latlng.lat, e.latlng.lng);
-            });
+            mapMarker.on('dragend', (e) => { const latlng = mapMarker.getLatLng(); updateMapLocationText(latlng.lat, latlng.lng); });
+            mapInstance.on('click', (e) => { mapMarker.setLatLng(e.latlng); updateMapLocationText(e.latlng.lat, e.latlng.lng); });
         }
 
         function updateMapLocationText(lat, lng) {
@@ -929,7 +936,6 @@
         function searchMapLocation() {
             const query = document.getElementById('map-search-input').value.trim();
             if (!query) return;
-
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ', Cambodia')}`)
                 .then(res => res.json())
                 .then(data => {
@@ -939,33 +945,22 @@
                         mapInstance.setView([lat, lon], 15);
                         mapMarker.setLatLng([lat, lon]);
                         updateMapLocationText(lat, lon);
-                    } else {
-                        showToast("រកមិនឃើញ", "មិនអាចរកឃើញទីតាំងនេះទេ!");
-                    }
-                })
-                .catch(() => showToast("កំហុស", "ការស្វែងរកទីតាំងមានបញ្ហា!"));
+                    } else showToast("រកមិនឃើញ", "មិនអាចរកឃើញទីតាំងនេះទេ!");
+                });
         }
 
         function getLiveGPSLocation() {
             if (navigator.geolocation) {
-                showToast("GPS", "កំពុងចាប់យកទីតាំងបច្ចុប្បន្នរបស់អ្នក...");
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
                         const lat = pos.coords.latitude;
                         const lng = pos.coords.longitude;
-                        if (mapInstance) {
-                            mapInstance.setView([lat, lng], 16);
-                            mapMarker.setLatLng([lat, lng]);
-                        }
+                        if (mapInstance) { mapInstance.setView([lat, lng], 16); mapMarker.setLatLng([lat, lng]); }
                         updateMapLocationText(lat, lng);
                         showToast("ជោគជ័យ", "បានចាប់យកទីតាំងបច្ចុប្បន្នរួចរាល់!");
                     },
-                    (err) => {
-                        showToast("កំហុស GPS", "សូមបើក Location Permission លើកម្មវិធីរុករករបស់អ្នក!");
-                    }
+                    () => showToast("កំហុស GPS", "សូមបើក Location Permission!")
                 );
-            } else {
-                showToast("កំហុស", "ឧបករណ៍របស់អ្នកមិនគាំទ្រ GPS ទេ!");
             }
         }
 
@@ -975,10 +970,7 @@
                 const district = document.getElementById('manual-district').value.trim();
                 const city = document.getElementById('manual-city').value.trim();
                 const landmark = document.getElementById('manual-landmark').value.trim();
-
-                if (!street || !district) {
-                    return null;
-                }
+                if (!street || !district) return null;
                 return `[Manual] ផ្ទះ/ផ្លូវ: ${street}, ខណ្ឌ/ស្រុក: ${district}, ${city}${landmark ? ' (ចំណាំ: ' + landmark + ')' : ''}`;
             } else {
                 if (!currentMapAddress) return null;
@@ -986,7 +978,106 @@
             }
         }
 
-        // 7. Processing & Checkout Flow
+        // STEP 5 NOTE & VOICE LOGIC
+        function switchNoteTab(tab) {
+            activeNoteTab = tab;
+            const isText = tab === 'text';
+            document.getElementById('note-text-section').classList.toggle('hidden', !isText);
+            document.getElementById('note-voice-section').classList.toggle('hidden', isText);
+
+            document.getElementById('note-tab-text').classList.toggle('border-red-500', isText);
+            document.getElementById('note-tab-text').classList.toggle('text-red-500', isText);
+            document.getElementById('note-tab-text').classList.toggle('opacity-60', !isText);
+
+            document.getElementById('note-tab-voice').classList.toggle('border-red-500', !isText);
+            document.getElementById('note-tab-voice').classList.toggle('text-red-500', !isText);
+            document.getElementById('note-tab-voice').classList.toggle('opacity-60', isText);
+        }
+
+        function updateWordCount() {
+            const input = document.getElementById('note-text-input').value;
+            const words = input.trim().split(/\s+/).filter(w => w.length > 0);
+            if (words.length > 150) {
+                // Limit to 150 words
+                const trimmed = words.slice(0, 150).join(" ");
+                document.getElementById('note-text-input').value = trimmed;
+            }
+            document.getElementById('word-count-display').innerText = `${Math.min(words.length, 150)} / 150 ពាក្យ`;
+        }
+
+        async function startVoiceRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (e) => { audioChunks.push(e.data); };
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    recordedVoiceBase64 = await convertBlobToBase64(audioBlob);
+                    
+                    // Setup preview audio
+                    previewAudioObj = new Audio(URL.createObjectURL(audioBlob));
+                    previewAudioObj.onended = () => {
+                        document.getElementById('preview-play-icon').className = 'fa-solid fa-play';
+                        document.getElementById('preview-progress-bar').style.width = '0%';
+                    };
+                    previewAudioObj.ontimeupdate = () => {
+                        if (previewAudioObj.duration) {
+                            const pct = (previewAudioObj.currentTime / previewAudioObj.duration) * 100;
+                            document.getElementById('preview-progress-bar').style.width = `${pct}%`;
+                            document.getElementById('preview-time').innerText = formatTimer(previewAudioObj.currentTime);
+                        }
+                    };
+
+                    document.getElementById('voice-preview-container').classList.remove('hidden');
+                };
+
+                mediaRecorder.start();
+                document.getElementById('btn-mic-start').classList.add('recording-pulse', 'bg-red-600');
+                document.getElementById('btn-mic-stop').disabled = false;
+                document.getElementById('voice-status-text').innerHTML = `<span class="text-red-500 font-bold"><i class="fa-solid fa-circle text-[10px] animate-ping mr-1"></i> កំពុងថតសំឡេង... (Recording)</span>`;
+            } catch(e) {
+                showToast("កំហុស Microphone", "សូមអនុញ្ញាត permissions សម្រាប់ប្រើប្រាស់ Microphone!");
+            }
+        }
+
+        function stopVoiceRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                document.getElementById('btn-mic-start').classList.remove('recording-pulse', 'bg-red-600');
+                document.getElementById('btn-mic-stop').disabled = true;
+                document.getElementById('voice-status-text').innerText = 'ថតសំឡេងរួចរាល់!';
+            }
+        }
+
+        function playVoicePreview() {
+            if (!previewAudioObj) return;
+            const icon = document.getElementById('preview-play-icon');
+            if (previewAudioObj.paused) {
+                previewAudioObj.play();
+                icon.className = 'fa-solid fa-pause';
+            } else {
+                previewAudioObj.pause();
+                icon.className = 'fa-solid fa-play';
+            }
+        }
+
+        function clearVoiceRecord() {
+            if (previewAudioObj) previewAudioObj.pause();
+            recordedVoiceBase64 = null;
+            previewAudioObj = null;
+            document.getElementById('voice-preview-container').classList.add('hidden');
+            document.getElementById('voice-status-text').innerHTML = `ចុចប៊ូតុង <i class="fa-solid fa-microphone"></i> ដើម្បីចាប់ផ្តើមថតសំឡេង`;
+        }
+
+        function skipNoteAndOrder() {
+            document.getElementById('note-text-input').value = '';
+            clearVoiceRecord();
+            placeOrderProcess();
+        }
+
         function placeOrderProcess() {
             const finalAddress = getFormattedAddress();
             if (!finalAddress) {
@@ -1048,6 +1139,14 @@
             const schedDate = document.getElementById(isCash ? 'cash-schedule-date' : 'khqr-schedule-date').value;
             const address = getFormattedAddress();
 
+            // Note Data
+            const textNoteVal = document.getElementById('note-text-input').value.trim();
+            const noteData = {
+                type: activeNoteTab,
+                text: activeNoteTab === 'text' && textNoteVal ? textNoteVal : null,
+                voiceBase64: activeNoteTab === 'voice' && recordedVoiceBase64 ? recordedVoiceBase64 : null
+            };
+
             const orderPayload = {
                 orderId: 'ORD-' + Date.now().toString().slice(-6),
                 username: currentUser.username,
@@ -1058,6 +1157,7 @@
                 scheduleType: schedType,
                 scheduleDate: schedType === 'schedule' ? schedDate : 'Now',
                 address: address,
+                note: noteData,
                 status: 'pending',
                 timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                 createdAtString: new Date().toLocaleString('km-KH')
@@ -1065,11 +1165,8 @@
 
             await db.collection('orders').add(orderPayload);
 
-            // Increment Order Count
             currentUser.orderCount = (currentUser.orderCount || 0) + 1;
-            await db.collection('users').doc(currentUser.username).update({
-                orderCount: currentUser.orderCount
-            });
+            await db.collection('users').doc(currentUser.username).update({ orderCount: currentUser.orderCount });
             localStorage.setItem('thyda_user', JSON.stringify(currentUser));
             updateStatusDisplay();
 
@@ -1078,7 +1175,6 @@
             closeCheckout();
             showToast("ជោគជ័យ", "ការកុម្ម៉ង់ត្រូវបានផ្ញើទៅកាន់អ្នកលក់រួចរាល់!");
 
-            // Open Receipt Modal for newly placed order
             openReceiptModal(orderPayload);
         }
 
@@ -1086,7 +1182,6 @@
             document.getElementById('checkout-modal').classList.add('hidden');
         }
 
-        // 8. Order History & Animated Receipt Engine
         function toggleHistoryModal() {
             const modal = document.getElementById('history-modal');
             const isOpening = modal.classList.contains('hidden');
@@ -1099,10 +1194,7 @@
             container.innerHTML = `<p class="text-xs text-center py-6 opacity-60">កំពុងទាញយកទិន្នន័យ...</p>`;
 
             try {
-                const snapshot = await db.collection('orders')
-                    .where('username', '==', currentUser.username)
-                    .get();
-
+                const snapshot = await db.collection('orders').where('username', '==', currentUser.username).get();
                 if (snapshot.empty) {
                     container.innerHTML = `<p class="text-xs text-center py-6 opacity-60">មិនទាន់មានប្រវត្តិការកុម្ម៉ង់នៅឡើយទេ</p>`;
                     return;
@@ -1110,8 +1202,6 @@
 
                 let orders = [];
                 snapshot.forEach(doc => orders.push({ id: doc.id, ...doc.data() }));
-                
-                // Sort by timestamp descending
                 orders.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
 
                 container.innerHTML = orders.map(ord => {
@@ -1129,7 +1219,6 @@
                                 <p class="text-[10px] opacity-60"><i class="fa-regular fa-clock mr-1"></i>${dateStr}</p>
                                 <p class="text-xs font-bold text-red-600">${ord.totalPrice.toLocaleString()} ៛</p>
                             </div>
-                            <!-- Receipt Action Button -->
                             <button onclick='openReceiptModal(${JSON.stringify(ord).replace(/'/g, "&apos;")})' class="p-3 bg-red-50 dark:bg-red-900/40 text-red-600 rounded-xl hover:bg-red-100 transition-all flex flex-col items-center gap-1">
                                 <i class="fa-solid fa-receipt text-lg"></i>
                                 <span class="text-[9px] font-bold">វិក្កយបត្រ</span>
@@ -1138,7 +1227,6 @@
                     `;
                 }).join('');
             } catch(e) {
-                console.error("Error loading history:", e);
                 container.innerHTML = `<p class="text-xs text-center py-6 text-red-500">មិនអាចទាញយកទិន្នន័យបានទេ!</p>`;
             }
         }
@@ -1151,7 +1239,6 @@
             document.getElementById('receipt-pay-method').innerText = orderData.paymentMethod === 'khqr' ? 'KHQR Payment' : 'Pay in Cash';
             document.getElementById('receipt-total').innerText = `${orderData.totalPrice.toLocaleString()} ៛`;
 
-            // Format Address
             let addrDisplay = orderData.address || 'មិនមានព័ត៌មាន';
             if (addrDisplay.includes('http')) {
                 const parts = addrDisplay.split('https');
@@ -1159,7 +1246,6 @@
             }
             document.getElementById('receipt-address').innerHTML = addrDisplay;
 
-            // Render Purchased Items List
             document.getElementById('receipt-items-list').innerHTML = orderData.items.map(item => `
                 <div class="flex justify-between items-center text-[11px]">
                     <span>${item.categoryName} <span class="opacity-60">x ${item.weightKg < 1 ? (item.weightKg*10).toFixed(0) + ' ខាំ' : item.weightKg.toFixed(1) + ' KG'}</span></span>
@@ -1167,25 +1253,63 @@
                 </div>
             `).join('');
 
+            // RENDER STEP 5 NOTE IN RECEIPT
+            const wrapper = document.getElementById('receipt-note-wrapper');
+            const txtEl = document.getElementById('receipt-text-note');
+            const voiceEl = document.getElementById('receipt-voice-note');
+
+            if (receiptAudioObj) { receiptAudioObj.pause(); receiptAudioObj = null; }
+
+            if (orderData.note && (orderData.note.text || orderData.note.voiceBase64)) {
+                wrapper.classList.remove('hidden');
+                if (orderData.note.text) {
+                    txtEl.innerText = `"${orderData.note.text}"`;
+                    txtEl.classList.remove('hidden');
+                    voiceEl.classList.add('hidden');
+                } else if (orderData.note.voiceBase64) {
+                    txtEl.classList.add('hidden');
+                    voiceEl.classList.remove('hidden');
+                    
+                    receiptAudioObj = new Audio(orderData.note.voiceBase64);
+                    receiptAudioObj.onended = () => {
+                        document.getElementById('receipt-play-btn-icon').className = 'fa-solid fa-play';
+                        document.getElementById('receipt-audio-bar').style.width = '0%';
+                    };
+                    receiptAudioObj.ontimeupdate = () => {
+                        if (receiptAudioObj.duration) {
+                            const pct = (receiptAudioObj.currentTime / receiptAudioObj.duration) * 100;
+                            document.getElementById('receipt-audio-bar').style.width = `${pct}%`;
+                            document.getElementById('receipt-audio-timer').innerText = formatTimer(receiptAudioObj.currentTime);
+                        }
+                    };
+                }
+            } else {
+                wrapper.classList.add('hidden');
+            }
+
             document.getElementById('receipt-modal').classList.remove('hidden');
         }
 
+        function toggleReceiptAudioPlay() {
+            if (!receiptAudioObj) return;
+            const icon = document.getElementById('receipt-play-btn-icon');
+            if (receiptAudioObj.paused) {
+                receiptAudioObj.play();
+                icon.className = 'fa-solid fa-pause';
+            } else {
+                receiptAudioObj.pause();
+                icon.className = 'fa-solid fa-play';
+            }
+        }
+
         function closeReceiptModal() {
+            if (receiptAudioObj) receiptAudioObj.pause();
             document.getElementById('receipt-modal').classList.add('hidden');
         }
 
-        // 9. Settings & Account System
-        function toggleSettings() {
-            document.getElementById('settings-modal').classList.toggle('hidden');
-        }
-
-        function changeTheme(themeName) {
-            document.body.className = `theme-${themeName} min-h-screen flex flex-col`;
-        }
-
-        function triggerAvatarChange() {
-            document.getElementById('change-avatar-file').click();
-        }
+        function toggleSettings() { document.getElementById('settings-modal').classList.toggle('hidden'); }
+        function changeTheme(themeName) { document.body.className = `theme-${themeName} min-h-screen flex flex-col`; }
+        function triggerAvatarChange() { document.getElementById('change-avatar-file').click(); }
 
         async function previewAndSaveAvatar(e) {
             const file = e.target.files[0];
@@ -1198,29 +1322,23 @@
             showToast("ជោគជ័យ", "រូបប្រូហ្វែលត្រូវបានផ្លាស់ប្តូរ!");
         }
 
-        function handleLogout() {
-            localStorage.removeItem('thyda_user');
-            location.reload();
-        }
+        function handleLogout() { localStorage.removeItem('thyda_user'); location.reload(); }
 
         async function promptDeactivate() {
-            if (confirm("តើអ្នកប្រាកដជាចង់លុបគណនីអចិន្ត្រៃយ៍? ទិន្នន័យទាំងអស់នឹងត្រូវបាត់បង់!")) {
+            if (confirm("តើអ្នកប្រាកដជាចង់លុបគណនីអចិន្ត្រៃយ៍?")) {
                 await db.collection('users').doc(currentUser.username).delete();
                 localStorage.removeItem('thyda_user');
                 location.reload();
             }
         }
 
-        // 10. Live Real-time Chat System
         function toggleChat() {
             document.getElementById('chat-modal').classList.toggle('hidden');
             document.getElementById('chat-badge').classList.add('hidden');
         }
 
         function initChatListener() {
-            db.collection('chats')
-                .doc(currentUser.username)
-                .collection('messages')
+            db.collection('chats').doc(currentUser.username).collection('messages')
                 .orderBy('timestamp', 'asc')
                 .onSnapshot(snapshot => {
                     const container = document.getElementById('chat-messages');
@@ -1228,14 +1346,11 @@
                     snapshot.forEach(doc => {
                         const data = doc.data();
                         const isMe = data.sender === currentUser.username;
-                        const dateStr = data.timestamp ? formatDate(data.timestamp.toDate()) : '';
-
                         container.innerHTML += `
                             <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
                                 <div class="max-w-[80%] p-2.5 rounded-2xl ${isMe ? 'bg-red-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}">
                                     <p>${data.text}</p>
                                 </div>
-                                <span class="text-[9px] opacity-50 mt-1">${dateStr}</span>
                             </div>
                         `;
                     });
@@ -1247,16 +1362,12 @@
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
             if (!text) return;
-
             input.value = '';
             await db.collection('chats').doc(currentUser.username).collection('messages').add({
-                sender: currentUser.username,
-                text,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                sender: currentUser.username, text, timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
         }
 
-        // Utilities
         function convertBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -1266,12 +1377,19 @@
             });
         }
 
-        function formatDate(date) {
-            const now = new Date();
-            const diffMin = Math.floor((now - date) / 60000);
-            if (diffMin < 1) return 'Recent';
-            if (diffMin < 60) return `${diffMin}m ago`;
-            return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
+        function convertBlobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(blob);
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+            });
+        }
+
+        function formatTimer(sec) {
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
         }
     </script>
 </body>
