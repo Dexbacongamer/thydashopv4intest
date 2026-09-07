@@ -563,7 +563,7 @@
                     </div>
 
                     <div id="khqr-confirm-group" class="hidden space-y-2 mt-3">
-                        <button onclick="finalSubmitOrder()" class="w-full py-3 bg-green-600 text-white rounded-xl font-bold text-xs shadow-lg">
+                        <button id="khqr-submit-btn" onclick="finalSubmitOrder()" class="w-full py-3 bg-green-600 text-white rounded-xl font-bold text-xs shadow-lg disabled:opacity-50">
                             ខ្ញុំបានទូទាត់រួចរាល់តាមការបញ្ជាក់ (I have paid as confirm)
                         </button>
                         <button onclick="toggleDisclaimer()" class="text-[10px] text-gray-500 underline block mx-auto">
@@ -576,7 +576,7 @@
                 </div>
             </div>
 
-            <button id="cash-submit-btn" onclick="finalSubmitOrder()" class="w-full py-3 theme-btn rounded-xl font-bold text-xs shadow-lg mt-4">
+            <button id="cash-submit-btn" onclick="finalSubmitOrder()" class="w-full py-3 theme-btn rounded-xl font-bold text-xs shadow-lg mt-4 disabled:opacity-50">
                 បញ្ជាក់ការកុម្ម៉ង់ (Confirm Cash Order)
             </button>
         </div>
@@ -1165,49 +1165,62 @@
         }
 
         async function finalSubmitOrder() {
-            const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
-            const isCash = selectedPayMethod === 'cash';
-            const schedType = document.getElementById(isCash ? 'cash-schedule-type' : 'khqr-schedule-type').value;
-            const schedDate = document.getElementById(isCash ? 'cash-schedule-date' : 'khqr-schedule-date').value;
-            const address = getFormattedAddress();
+            const cashBtn = document.getElementById('cash-submit-btn');
+            const khqrBtn = document.getElementById('khqr-submit-btn');
+            if (cashBtn) cashBtn.disabled = true;
+            if (khqrBtn) khqrBtn.disabled = true;
 
-            // Note Data
-            const textNoteVal = document.getElementById('note-text-input').value.trim();
-            const noteData = {
-                type: activeNoteTab,
-                text: activeNoteTab === 'text' && textNoteVal ? textNoteVal : null,
-                voiceBase64: activeNoteTab === 'voice' && recordedVoiceBase64 ? recordedVoiceBase64 : null
-            };
+            try {
+                const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
+                const isCash = selectedPayMethod === 'cash';
+                const schedType = document.getElementById(isCash ? 'cash-schedule-type' : 'khqr-schedule-type').value;
+                const schedDate = document.getElementById(isCash ? 'cash-schedule-date' : 'khqr-schedule-date').value || 'Now';
+                const address = getFormattedAddress();
 
-            const orderPayload = {
-                orderId: 'ORD-' + Date.now().toString().slice(-6),
-                username: currentUser.username,
-                phone: currentUser.phone,
-                items: cart,
-                totalPrice,
-                paymentMethod: selectedPayMethod,
-                scheduleType: schedType,
-                scheduleDate: schedType === 'schedule' ? schedDate : 'Now',
-                address: address,
-                note: noteData,
-                status: 'pending',
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                createdAtString: new Date().toLocaleString('km-KH')
-            };
+                // Note Data sanitized to replace undefined values with null for Firestore compatibility
+                const textNoteVal = document.getElementById('note-text-input').value.trim();
+                const noteData = {
+                    type: activeNoteTab || 'text',
+                    text: (activeNoteTab === 'text' && textNoteVal) ? textNoteVal : null,
+                    voiceBase64: (activeNoteTab === 'voice' && recordedVoiceBase64) ? recordedVoiceBase64 : null
+                };
 
-            await db.collection('orders').add(orderPayload);
+                const orderPayload = {
+                    orderId: 'ORD-' + Date.now().toString().slice(-6),
+                    username: currentUser.username || 'Guest',
+                    phone: currentUser.phone || '',
+                    items: cart,
+                    totalPrice,
+                    paymentMethod: selectedPayMethod,
+                    scheduleType: schedType,
+                    scheduleDate: schedType === 'schedule' ? schedDate : 'Now',
+                    address: address || '',
+                    note: noteData,
+                    status: 'pending',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdAtString: new Date().toLocaleString('km-KH')
+                };
 
-            currentUser.orderCount = (currentUser.orderCount || 0) + 1;
-            await db.collection('users').doc(currentUser.username).update({ orderCount: currentUser.orderCount });
-            localStorage.setItem('thyda_user', JSON.stringify(currentUser));
-            updateStatusDisplay();
+                await db.collection('orders').add(orderPayload);
 
-            cart = [];
-            renderCart();
-            closeCheckout();
-            showToast("ជោគជ័យ", "ការកុម្ម៉ង់ត្រូវបានផ្ញើទៅកាន់អ្នកលក់រួចរាល់!");
+                currentUser.orderCount = (currentUser.orderCount || 0) + 1;
+                await db.collection('users').doc(currentUser.username).update({ orderCount: currentUser.orderCount });
+                localStorage.setItem('thyda_user', JSON.stringify(currentUser));
+                updateStatusDisplay();
 
-            openReceiptModal(orderPayload);
+                cart = [];
+                renderCart();
+                closeCheckout();
+                showToast("ជោគជ័យ", "ការកុម្ម៉ង់ត្រូវបានផ្ញើទៅកាន់អ្នកលក់រួចរាល់!");
+
+                openReceiptModal(orderPayload);
+            } catch (err) {
+                console.error("Order submission error:", err);
+                showToast("កំហុស", "ការផ្ញើការកុម្ម៉ង់មានបញ្ហា! សូមព្យាយាមម្តងទៀត។");
+            } finally {
+                if (cashBtn) cashBtn.disabled = false;
+                if (khqrBtn) khqrBtn.disabled = false;
+            }
         }
 
         function closeCheckout() {
