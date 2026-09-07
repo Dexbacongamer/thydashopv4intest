@@ -113,7 +113,7 @@
     <div id="splash-screen" class="fixed inset-0 z-50 bg-red-600 flex flex-col items-center justify-center text-white">
         <div class="relative animate-bounce mb-4">
             <div class="w-28 h-28 bg-pink-300 rounded-full flex items-center justify-center text-6xl shadow-inner border-4 border-white">
-                🐷
+                🐖
             </div>
         </div>
         <h1 class="text-2xl font-bold tracking-wide">សូមស្វាគមន៍មកកាន់</h1>
@@ -677,17 +677,16 @@
 
         // Receipt Voice Player State
         let receiptAudioObj = null;
-    const porkCategories = [
-      { id: 'thoy_lang', name: 'ថយឡាំង', price: 23000, icon: '🥩' },
-      { id: 'sach_bei_chhhana', name: 'សាច់បីជាន់', price: 24000, icon: '🥓' },
-      { id: 'chhnang_kop', name: 'ឆ្អឹងគប់', price: 22000, icon: '🦴' },
-      { id: 'chhnang_chhnang', name: 'ឆ្អឹងជំនី', price: 24000, icon: '🍖' },
-      { id: 'sach_sot', name: 'សាច់សុទ្ធ', price: 22000, icon: '🥩' },
-      { id: 'sach_krok', name: 'សាច់ក្រក', price: 30000, icon: '🌭' },
-      { id: 'jeung_jrouk', name: 'ជើងជ្រូក', price: 22000, icon: '🐖' },
-      { id: 'kroeung_knong', name: 'គ្រឿងក្នុង', price: 24000, icon: '🍲' }
-    ];
-
+        const porkCategories = [
+          { id: 'thoy_lang', name: 'ថយឡាំង', price: 23000, icon: '🥩' },
+          { id: 'sach_bei_chhhana', name: 'សាច់បីជាន់', price: 24000, icon: '🥓' },
+          { id: 'chhnang_kop', name: 'ឆ្អឹងគប់', price: 22000, icon: '🦴' },
+          { id: 'chhnang_chhnang', name: 'ឆ្អឹងជំនី', price: 24000, icon: '🍖' },
+          { id: 'sach_sot', name: 'សាច់សុទ្ធ', price: 22000, icon: '🥩' },
+          { id: 'sach_krok', name: 'សាច់ក្រក', price: 30000, icon: '🌭' },
+          { id: 'jeung_jrouk', name: 'ជើងជ្រូក', price: 22000, icon: '🐖' },
+          { id: 'kroeung_knong', name: 'គ្រឿងក្នុង', price: 24000, icon: '🍲' }
+        ];
 
         function playNotificationSound() {
             try {
@@ -978,7 +977,7 @@
             }
         }
 
-        // STEP 5 NOTE & VOICE LOGIC
+        // STEP 5 NOTE & VOICE LOGIC (SAFARI/iOS REPAIRED)
         function switchNoteTab(tab) {
             activeNoteTab = tab;
             const isText = tab === 'text';
@@ -998,26 +997,60 @@
             const input = document.getElementById('note-text-input').value;
             const words = input.trim().split(/\s+/).filter(w => w.length > 0);
             if (words.length > 150) {
-                // Limit to 150 words
                 const trimmed = words.slice(0, 150).join(" ");
                 document.getElementById('note-text-input').value = trimmed;
             }
             document.getElementById('word-count-display').innerText = `${Math.min(words.length, 150)} / 150 ពាក្យ`;
         }
 
+        function getSupportedMimeType() {
+            if (typeof MediaRecorder === 'undefined') return '';
+            const types = [
+                'audio/mp4',
+                'audio/aac',
+                'audio/webm;codecs=opus',
+                'audio/webm',
+                'audio/ogg'
+            ];
+            for (let type of types) {
+                if (MediaRecorder.isTypeSupported(type)) {
+                    return type;
+                }
+            }
+            return '';
+        }
+
         async function startVoiceRecording() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { echoCancellation: true, noiseSuppression: true } 
+                });
+
+                const mimeType = getSupportedMimeType();
+                const options = mimeType ? { mimeType } : {};
+                
+                mediaRecorder = new MediaRecorder(stream, options);
                 audioChunks = [];
 
-                mediaRecorder.ondataavailable = (e) => { audioChunks.push(e.data); };
+                mediaRecorder.ondataavailable = (e) => { 
+                    if (e.data && e.data.size > 0) {
+                        audioChunks.push(e.data); 
+                    }
+                };
+
                 mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    // Release iOS audio tracks
+                    stream.getTracks().forEach(track => track.stop());
+
+                    const finalMime = mediaRecorder.mimeType || 'audio/mp4';
+                    const audioBlob = new Blob(audioChunks, { type: finalMime });
+                    
                     recordedVoiceBase64 = await convertBlobToBase64(audioBlob);
                     
-                    // Setup preview audio
-                    previewAudioObj = new Audio(URL.createObjectURL(audioBlob));
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    if (previewAudioObj) previewAudioObj.pause();
+
+                    previewAudioObj = new Audio(audioUrl);
                     previewAudioObj.onended = () => {
                         document.getElementById('preview-play-icon').className = 'fa-solid fa-play';
                         document.getElementById('preview-progress-bar').style.width = '0%';
@@ -1033,7 +1066,7 @@
                     document.getElementById('voice-preview-container').classList.remove('hidden');
                 };
 
-                mediaRecorder.start();
+                mediaRecorder.start(100);
                 document.getElementById('btn-mic-start').classList.add('recording-pulse', 'bg-red-600');
                 document.getElementById('btn-mic-stop').disabled = false;
                 document.getElementById('voice-status-text').innerHTML = `<span class="text-red-500 font-bold"><i class="fa-solid fa-circle text-[10px] animate-ping mr-1"></i> កំពុងថតសំឡេង... (Recording)</span>`;
@@ -1045,7 +1078,6 @@
         function stopVoiceRecording() {
             if (mediaRecorder && mediaRecorder.state !== 'inactive') {
                 mediaRecorder.stop();
-                mediaRecorder.stream.getTracks().forEach(track => track.stop());
                 document.getElementById('btn-mic-start').classList.remove('recording-pulse', 'bg-red-600');
                 document.getElementById('btn-mic-stop').disabled = true;
                 document.getElementById('voice-status-text').innerText = 'ថតសំឡេងរួចរាល់!';
@@ -1056,7 +1088,7 @@
             if (!previewAudioObj) return;
             const icon = document.getElementById('preview-play-icon');
             if (previewAudioObj.paused) {
-                previewAudioObj.play();
+                previewAudioObj.play().catch(e => console.log('Playback restricted:', e));
                 icon.className = 'fa-solid fa-pause';
             } else {
                 previewAudioObj.pause();
@@ -1294,7 +1326,7 @@
             if (!receiptAudioObj) return;
             const icon = document.getElementById('receipt-play-btn-icon');
             if (receiptAudioObj.paused) {
-                receiptAudioObj.play();
+                receiptAudioObj.play().catch(e => console.log('Playback restricted:', e));
                 icon.className = 'fa-solid fa-pause';
             } else {
                 receiptAudioObj.pause();
